@@ -1,3 +1,4 @@
+import updateChoice from "app/choices/mutations/updateChoice";
 import Layout from "app/core/layouts/Layout";
 import deleteQuestion from "app/questions/mutations/deleteQuestion";
 import getQuestion from "app/questions/queries/getQuestion";
@@ -8,7 +9,17 @@ export const Question = () => {
   const router = useRouter();
   const questionId = useParam("questionId", "number");
   const [deleteQuestionMutation] = useMutation(deleteQuestion);
-  const [question] = useQuery(getQuestion, { id: questionId });
+  const [question, { refetch }] = useQuery(getQuestion, { id: questionId });
+  const [updateChoiceMutation] = useMutation(updateChoice);
+
+  const handleVote = async (id: number) => {
+    try {
+      await updateChoiceMutation({ id });
+      refetch();
+    } catch (err) {
+      alert("Error updating choice " + JSON.stringify(err, null, 2));
+    }
+  };
 
   return (
     <>
@@ -23,6 +34,7 @@ export const Question = () => {
           {question.choices.map((choice) => (
             <li key={choice.id}>
               {choice.text} - {choice.votes} votes
+              <button onClick={() => handleVote(choice.id)}>Vote</button>
             </li>
           ))}
         </ul>
